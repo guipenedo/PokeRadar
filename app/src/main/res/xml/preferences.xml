@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:key="pref_key_storage_settings"
+        android:title="Filter items">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pref_key_show_pokemon"
+            android:summary="Show pokemon"
+            android:title="Pokemon" />
+        <Preference
+            android:dependency="pref_key_show_pokemon"
+            android:key="pref_filter_pokemons"
+            android:persistent="false"
+            android:summary="Hide certain pokemon"
+            android:title="Filter pokemons">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:targetClass="com.guipenedo.pokeradar.settings.PokemonFilterSettingsActivity"
+                android:targetPackage="com.guipenedo.pokeradar" />
+        </Preference>
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pref_key_show_pokestops"
+            android:summary="Show pokestops"
+            android:title="Pokestops" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pref_key_show_gyms"
+            android:summary="Show gyms"
+            android:title="Gyms" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_key_show_spawnpoints"
+            android:summary="Show spawnpoints"
+            android:title="Spawnpoints" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="pref_key_scan_settings"
+        android:title="Scanning">
+        <EditTextPreference
+            android:defaultValue="2"
+            android:inputType="number"
+            android:key="pref_key_delay"
+            android:summary="Seconds between requests. Small value might get you banned faster/less results."
+            android:title="Delay" />
+        <EditTextPreference
+            android:defaultValue="4"
+            android:inputType="number"
+            android:key="pref_key_steps"
+            android:summary="Range around selected location to search for. 1 = 170m"
+            android:title="Range" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_key_show_scanarea"
+            android:summary="Display a rectangle on the scan area"
+            android:title="Show scan area" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_key_show_centers"
+            android:summary="Show scan centers"
+            android:title="Scan centers" />
+    </PreferenceCategory>
+</PreferenceScreen>
