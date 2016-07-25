@@ -10,7 +10,7 @@ Android scanner app for pokemon go.
 </p>
 
 #How to install
-1. Download the latest app-debug.apk file from https://github.com/guipenedo/PokeRadar/release
+1. Download the latest app-debug.apk file from https://github.com/guipenedo/PokeRadar/releases
 2. Click to install it
 3. Enable "Unknown sources" in settings to allow the install
 4. Click install
