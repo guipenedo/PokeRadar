@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.guipenedo.pokeradar;
+package com.guipenedo.pokeradar.activities;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -38,6 +38,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.guipenedo.pokeradar.R;
 import com.pokegoapi.api.PokemonGo;
 import com.pokegoapi.auth.PtcCredentialProvider;
 import com.pokegoapi.exceptions.LoginFailedException;

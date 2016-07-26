@@ -24,7 +24,7 @@
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="com.guipenedo.pokeradar.MapsActivity" />
+        tools:context=".activities.MapsActivity" />
 
     <Button
         android:id="@+id/scanButton"

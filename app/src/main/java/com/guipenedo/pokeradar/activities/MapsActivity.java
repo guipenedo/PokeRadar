@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.guipenedo.pokeradar;
+package com.guipenedo.pokeradar.activities;
 
 import android.Manifest;
 import android.content.Context;
@@ -62,6 +62,8 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
+import com.guipenedo.pokeradar.R;
+import com.guipenedo.pokeradar.Utils;
 import com.guipenedo.pokeradar.module.MapWrapper;
 import com.guipenedo.pokeradar.module.PGym;
 import com.guipenedo.pokeradar.module.PMarker;
@@ -72,7 +74,7 @@ import com.guipenedo.pokeradar.scan.ScanCompleteCallback;
 import com.guipenedo.pokeradar.scan.ScanSettings;
 import com.guipenedo.pokeradar.scan.ScanTask;
 import com.guipenedo.pokeradar.scan.ScanUpdateCallback;
-import com.guipenedo.pokeradar.settings.MainSettingsActivity;
+import com.guipenedo.pokeradar.activities.settings.MainSettingsActivity;
 import com.pokegoapi.api.map.fort.Pokestop;
 import com.pokegoapi.api.map.pokemon.CatchablePokemon;
 
@@ -384,6 +386,16 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
                 return true;
             }
         });
+        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+            @Override
+            public void onInfoWindowClick(Marker m) {
+                PMarker marker = pokemonMarkers.get(m.getId());
+                if (marker == null || marker.type != PMarker.MarkerType.GYM) return;
+                Intent gymIntent = new Intent(MapsActivity.this, GymDetailsActivity.class);
+                gymIntent.putExtra("gymDetails", (PGym) marker);
+                startActivity(gymIntent);
+            }
+        });
         mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
 
             @Override
@@ -417,7 +429,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
                         PPokestop pokestopMarker = (PPokestop) marker;
                         timestamp = pokestopMarker.getTimestamp();
                         TextView remainingTime = new TextView(mContext);
-                        String text = String.format(getString(R.string.lured_remaining), Utils.countdownFromMillis(MapsActivity.this, pokestopMarker.getTimestamp() - System.currentTimeMillis()));
+                        String text = String.format(getString(R.string.lured_remaining), Utils.countdownFromMillis(mContext, pokestopMarker.getTimestamp() - System.currentTimeMillis()));
                         remainingTime.setText(text);
                         remainingTime.setGravity(Gravity.CENTER);
                         info.addView(remainingTime);
@@ -441,7 +453,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
                         PPokemon pokemonMarker = (PPokemon) marker;
                         timestamp = pokemonMarker.getTimestamp();
                         final TextView remainingTime = new TextView(mContext);
-                        remainingTime.setText(String.format(getString(R.string.pokemon_despawns_time), Utils.countdownFromMillis(MapsActivity.this, pokemonMarker.getTimestamp() - System.currentTimeMillis())));
+                        remainingTime.setText(String.format(getString(R.string.pokemon_despawns_time), Utils.countdownFromMillis(mContext, pokemonMarker.getTimestamp() - System.currentTimeMillis())));
                         remainingTime.setGravity(Gravity.CENTER);
                         info.addView(remainingTime);
                         TextView expireTime = new TextView(mContext);

@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-package com.guipenedo.pokeradar.settings;
+package com.guipenedo.pokeradar.activities.settings;
 
 import android.content.res.Configuration;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
 import android.preference.PreferenceActivity;
-import android.preference.PreferenceCategory;
-import android.preference.PreferenceScreen;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NavUtils;
@@ -35,40 +31,16 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.guipenedo.pokeradar.R;
-import com.guipenedo.pokeradar.Utils;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-public class PokemonFilterSettingsActivity extends PreferenceActivity {
+public class MainSettingsActivity extends PreferenceActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         getDelegate().installViewFactory();
         getDelegate().onCreate(savedInstanceState);
         super.onCreate(savedInstanceState);
-        PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(this);
-        PreferenceCategory category = new PreferenceCategory(this);
-        category.setTitle(R.string.filter_pokemons);
-        screen.addPreference(category);
-        try {
-            JSONArray pokemonList = new JSONArray(Utils.loadJSONFromFile(this, "pokemon.json"));
-            for (int i = 0; i < pokemonList.length(); i++){
-                JSONObject pokemon = pokemonList.getJSONObject(i);
-                CheckBoxPreference checkBox = new CheckBoxPreference(this);
-                checkBox.setTitle(pokemon.getString("Name"));
-                checkBox.setIcon(new BitmapDrawable(getResources(), Utils.bitmapForPokemon(this, Integer.parseInt(pokemon.getString("Number")))));
-                checkBox.setDefaultValue(true);
-                checkBox.setSummary(String.format(getString(R.string.setting_filter_pokemon_summary), pokemon.getString("Name")));
-                checkBox.setKey("pref_key_show_pokemon_" + Integer.parseInt(pokemon.getString("Number")));
-                category.addPreference(checkBox);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        setPreferenceScreen(screen);
+        //setContentView(R.layout.activity_settings);
+        addPreferencesFromResource(R.xml.preferences);
     }
 
 
@@ -158,7 +130,7 @@ public class PokemonFilterSettingsActivity extends PreferenceActivity {
     public boolean onOptionsItemSelected(MenuItem menuItem) {
         switch (menuItem.getItemId()) {
             case android.R.id.home:
-                NavUtils.navigateUpFromSameTask(PokemonFilterSettingsActivity.this);
+                NavUtils.navigateUpFromSameTask(MainSettingsActivity.this);
         }
         return (super.onOptionsItemSelected(menuItem));
     }
