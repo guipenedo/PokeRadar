@@ -14,8 +14,22 @@
  * limitations under the License.
  */
 
-package com.guipenedo.pokeradar.scan;
+package com.guipenedo.pokeradar.activities;
 
-public interface ScanCompleteCallback {
-    void scanComplete(Exception result);
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+
+import com.guipenedo.pokeradar.R;
+
+public class PokemonDetailsActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_pokemon_details);
+
+        Intent intent = getIntent();
+        int pokemonId = intent.getIntExtra("id", 1);
+    }
 }

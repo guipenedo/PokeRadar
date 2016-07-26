@@ -20,7 +20,6 @@
     <string name="title_activity_maps">PokeRadar</string>
     <string name="title_activity_login">Login to PTC</string>
 
-    <!-- Strings related to login -->
     <string name="prompt_username">Username</string>
     <string name="prompt_password">Password</string>
     <string name="action_sign_in">Sign in to PTC</string>
@@ -54,4 +53,9 @@
     <string name="filter_pokemons">Filter pokemons</string>
     <string name="setting_filter_pokemon_summary" formatted="false">Show %s</string>
     <string name="countdown" formatted="false">%dmin, %dsec</string>
+    <string name="team">team</string>
+    <string name="gym_details_points">%d Points</string>
+    <string name="pokemon">pokemon</string>
+    <string name="weak_against">Weak against</string>
+    <string name="strong_against">Strong against</string>
 </resources>

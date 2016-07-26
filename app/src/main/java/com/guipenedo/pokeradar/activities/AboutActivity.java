@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.guipenedo.pokeradar;
+package com.guipenedo.pokeradar.activities;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -22,6 +22,8 @@ import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.MenuItem;
 import android.widget.TextView;
+
+import com.guipenedo.pokeradar.R;
 
 public class AboutActivity extends AppCompatActivity {
 

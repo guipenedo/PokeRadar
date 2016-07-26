@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright 2016 Guilherme Penedo
   ~
   ~    Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,16 +12,15 @@
   ~    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   ~    See the License for the specific language governing permissions and
   ~ limitations under the License.
-  -->
-
+-->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.guipenedo.pokeradar">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <!--<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />-->
 
+    <!-- <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> -->
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -30,7 +28,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".MapsActivity"
+            android:name=".activities.MapsActivity"
             android:label="@string/title_activity_maps">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -47,23 +45,23 @@
             android:value="@integer/google_play_services_version" />
 
         <activity
-            android:name=".LoginActivity"
+            android:name=".activities.LoginActivity"
             android:label="@string/title_activity_login" />
         <activity
-            android:name=".settings.MainSettingsActivity"
+            android:name=".activities.settings.MainSettingsActivity"
             android:label="Settings"
-            android:parentActivityName=".MapsActivity">
+            android:parentActivityName=".activities.MapsActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.guipenedo.pokeradar.MapsActivity" />
+                android:value=".activities.MapsActivity" />
         </activity>
         <activity
-            android:name=".settings.PokemonFilterSettingsActivity"
+            android:name=".activities.settings.PokemonFilterSettingsActivity"
             android:label="Settings"
-            android:parentActivityName=".settings.MainSettingsActivity">
+            android:parentActivityName=".activities.settings.MainSettingsActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.guipenedo.pokeradar.settings.MainSettingsActivity" />
+                android:value=".activities.settings.MainSettingsActivity" />
         </activity>
 
         <meta-data
@@ -71,12 +69,12 @@
             android:value="a0f86c7b555753a08a4aebe05a5b30dacb601013" />
 
         <activity
-            android:name=".AboutActivity"
+            android:name=".activities.AboutActivity"
             android:label="About"
-            android:parentActivityName=".MapsActivity">
+            android:parentActivityName=".activities.MapsActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.guipenedo.pokeradar.MapsActivity" />
+                android:value=".activities.MapsActivity" />
         </activity>
 
         <meta-data
@@ -86,7 +84,17 @@
         <service
             android:name=".FilteredNotifierScan"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
+
+        <activity
+            android:name=".activities.GymDetailsActivity"
+            android:label="Gym details"
+            android:parentActivityName=".activities.MapsActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.MapsActivity" />
+        </activity>
+        <activity android:name=".activities.PokemonDetailsActivity"></activity>
     </application>
 
 </manifest>
