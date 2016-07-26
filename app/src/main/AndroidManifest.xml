@@ -94,6 +94,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.MapsActivity" />
         </activity>
+        <activity android:name=".activities.PokemonDetailsActivity"></activity>
     </application>
 
 </manifest>

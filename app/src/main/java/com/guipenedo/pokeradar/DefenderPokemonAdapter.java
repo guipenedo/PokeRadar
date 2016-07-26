@@ -54,6 +54,7 @@ public class DefenderPokemonAdapter extends ArrayAdapter<PokemonDataOuterClass.P
 
         TextView stamina = (TextView) convertView.findViewById(R.id.pokemonstamina);
         stamina.setText("Stamina: " + item.getIndividualStamina());
+
         return convertView;
     }
 }
