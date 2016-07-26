@@ -24,8 +24,10 @@ import java.util.List;
 
 import POGOProtos.Data.PokemonDataOuterClass;
 import POGOProtos.Enums.TeamColorOuterClass;
+import POGOProtos.Map.Fort.FortDataOuterClass;
 
 public class PGym extends PMarker {
+    private FortDataOuterClass.FortData data;
     private long points;
     private TeamColorOuterClass.TeamColor team;
     private List<PokemonDataOuterClass.PokemonData> defendingPokemon;
@@ -51,5 +53,8 @@ public class PGym extends PMarker {
 
     public PGym(Gym gym) throws LoginFailedException, RemoteServerException {
         this(gym.getPoints(), gym.getOwnedByTeam(), gym.getDefendingPokemon());
+        setLatitude(gym.getLatitude());
+        setLongitude(gym.getLongitude());
+        setId(gym.getId());
     }
 }

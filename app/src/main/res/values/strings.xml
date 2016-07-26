@@ -25,7 +25,7 @@
     <string name="prompt_password">Password</string>
     <string name="action_sign_in">Sign in to PTC</string>
     <string name="action_sign_in_short">Sign in</string>
-    <string name="error_incorrect_password">This password is incorrect / Servers down</string>
+    <string name="error_incorrect_password">Invalid login details</string>
     <string name="error_field_required">This field is required</string>
     <string name="dummyAccountWarning">Do not use your real account! You\'ll get banned! Instead, use a dummy/throwaway PTC account.</string>
     <string name="cancel">Cancel</string>

@@ -17,8 +17,6 @@
 package com.guipenedo.pokeradar.module;
 
 import com.pokegoapi.api.map.fort.Pokestop;
-import com.pokegoapi.exceptions.LoginFailedException;
-import com.pokegoapi.exceptions.RemoteServerException;
 
 public class PPokestop extends PMarker {
     private long timestamp;
@@ -33,7 +31,7 @@ public class PPokestop extends PMarker {
         this.timestamp = timestamp;
     }
 
-    public PPokestop(Pokestop pokestop) throws LoginFailedException, RemoteServerException {
+    public PPokestop(Pokestop pokestop) {
         this(pokestop.getFortData().getCooldownCompleteTimestampMs());
     }
 }

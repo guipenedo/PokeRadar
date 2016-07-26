@@ -18,6 +18,33 @@ package com.guipenedo.pokeradar.module;
 
 public class PMarker {
     public MarkerType type;
+    private String id;
+    private double latitude, longitude;
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLatitude() {
+
+        return latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public PMarker(MarkerType type) {
         this.type = type;

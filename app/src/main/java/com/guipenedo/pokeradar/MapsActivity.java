@@ -73,11 +73,8 @@ import com.guipenedo.pokeradar.scan.ScanSettings;
 import com.guipenedo.pokeradar.scan.ScanTask;
 import com.guipenedo.pokeradar.scan.ScanUpdateCallback;
 import com.guipenedo.pokeradar.settings.MainSettingsActivity;
-import com.pokegoapi.api.gym.Gym;
 import com.pokegoapi.api.map.fort.Pokestop;
 import com.pokegoapi.api.map.pokemon.CatchablePokemon;
-import com.pokegoapi.exceptions.LoginFailedException;
-import com.pokegoapi.exceptions.RemoteServerException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -247,27 +244,24 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
 
     @Override
     public void scanUpdate(MapWrapper map, int progress, LatLng location) {
-        try {
-            if (showPokestops)
-                for (Pokestop data : map.getPokestops())
-                    if (data.getFortData().getLureInfo().getLureExpiresTimestampMs() > 0)
-                        addLuredPokestop(data.getFortData());
-                    else
-                        addPokestop(data.getFortData());
-            if (showGyms)
-                for (Gym gym : map.getGyms())
-                    addGym(gym);
-            if (showPokemons)
-                for (CatchablePokemon pokemon : map.getPokemon())
-                    addPokemon(pokemon);
-            if (showSpawnpoints)
-                for (SpawnPointOuterClass.SpawnPoint data : map.getSpawnpoints())
-                    addSpawnpoint(data);
-            if (showScanCenters)
-                addMarker(getString(R.string.scan_center), location, null, false);
+        if (showPokestops)
+            for (Pokestop data : map.getPokestops())
+                if (data.getFortData().getLureInfo().getLureExpiresTimestampMs() > 0)
+                    addLuredPokestop(data.getFortData());
+                else
+                    addPokestop(data.getFortData());
+        if (showGyms)
+            for (PGym gym : map.getGyms())
+                addGym(gym);
+        if (showPokemons)
+            for (CatchablePokemon pokemon : map.getPokemon())
+                addPokemon(pokemon);
+        if (showSpawnpoints)
+            for (SpawnPointOuterClass.SpawnPoint data : map.getSpawnpoints())
+                addSpawnpoint(data);
+        if (showScanCenters)
+            addMarker(getString(R.string.scan_center), location, null, false);
 
-        } catch (Exception ignored) {
-        }
         scanRange.setCenter(location);
         progressBar.setProgress(progress);
     }
@@ -447,7 +441,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
                         PPokemon pokemonMarker = (PPokemon) marker;
                         timestamp = pokemonMarker.getTimestamp();
                         final TextView remainingTime = new TextView(mContext);
-                        remainingTime.setText(String.format(getString(R.string.pokemon_despawns_time),Utils.countdownFromMillis(MapsActivity.this, pokemonMarker.getTimestamp() - System.currentTimeMillis()) ));
+                        remainingTime.setText(String.format(getString(R.string.pokemon_despawns_time), Utils.countdownFromMillis(MapsActivity.this, pokemonMarker.getTimestamp() - System.currentTimeMillis())));
                         remainingTime.setGravity(Gravity.CENTER);
                         info.addView(remainingTime);
                         TextView expireTime = new TextView(mContext);
@@ -636,10 +630,10 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         updateMarkerAtTime(m, timestamp);
     }
 
-    public void addGym(Gym gym) throws LoginFailedException, RemoteServerException {
+    public void addGym(PGym gym) {
         if (fortExists(gym.getId())) return;
         LatLng location = new LatLng(gym.getLatitude(), gym.getLongitude());
-        addMarker(getString(R.string.gym), location, new PGym(gym), Team.fromTeamColor(gym.getOwnedByTeam()).getImage(MapsActivity.this));
+        addMarker(getString(R.string.gym), location, gym, Team.fromTeamColor(gym.getTeam()).getImage(MapsActivity.this));
         forts.add(gym.getId());
     }
 
@@ -658,7 +652,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         return forts.contains(id);
     }
 
-    public void addPokemon(CatchablePokemon data) throws LoginFailedException, RemoteServerException {
+    public void addPokemon(CatchablePokemon data) {
         if (pokemon.contains(data.getEncounterId()) || !mainPrefs.getBoolean("pref_key_show_pokemon_" + data.getPokemonId().getNumber(), true))
             return;
         LatLng location = new LatLng(data.getLatitude(), data.getLongitude());

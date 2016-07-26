@@ -19,7 +19,9 @@ package com.guipenedo.pokeradar.scan;
 import android.os.AsyncTask;
 
 import com.guipenedo.pokeradar.module.MapWrapper;
+import com.guipenedo.pokeradar.module.PGym;
 import com.pokegoapi.api.PokemonGo;
+import com.pokegoapi.api.gym.Gym;
 import com.pokegoapi.api.map.Map;
 import com.pokegoapi.api.map.MapObjects;
 import com.pokegoapi.auth.PtcCredentialProvider;
@@ -63,13 +65,19 @@ public class ScanTask extends AsyncTask<Void, MapWrapper, Boolean> {
             try {
                 Map map = go.getMap();
                 MapObjects objects = map.getMapObjects();
-                MapWrapper mapWrapper = new MapWrapper(objects.getPokestops(), map.getGyms(), map.getCatchablePokemon());
+                MapWrapper mapWrapper = new MapWrapper();
+                mapWrapper.getPokemon().addAll(map.getCatchablePokemon());
+                mapWrapper.getPokestops().addAll(objects.getPokestops());
                 mapWrapper.getSpawnpoints().addAll(objects.getDecimatedSpawnPoints());
                 mapWrapper.getSpawnpoints().addAll(objects.getSpawnPoints());
+                for (Gym gym : map.getGyms()){
+                    mapWrapper.getGyms().add(new PGym(gym));
+                }
                 publishProgress(mapWrapper);
 
                 Thread.sleep(settings.delay);
             } catch (Exception ignored) {
+                ignored.printStackTrace();
             }
         }
         return true;

@@ -17,8 +17,6 @@
 package com.guipenedo.pokeradar.module;
 
 import com.pokegoapi.api.map.pokemon.CatchablePokemon;
-import com.pokegoapi.exceptions.LoginFailedException;
-import com.pokegoapi.exceptions.RemoteServerException;
 
 public class PPokemon extends PMarker {
     private long timestamp;
@@ -32,7 +30,7 @@ public class PPokemon extends PMarker {
         this.timestamp = timestamp;
     }
 
-    public PPokemon(CatchablePokemon pokemon) throws LoginFailedException, RemoteServerException {
+    public PPokemon(CatchablePokemon pokemon) {
         this(pokemon.getExpirationTimestampMs());
     }
 }
