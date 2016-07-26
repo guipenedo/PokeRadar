@@ -25,12 +25,10 @@ import com.pokegoapi.api.gym.Gym;
 import com.pokegoapi.api.map.Map;
 import com.pokegoapi.api.map.MapObjects;
 import com.pokegoapi.auth.PtcCredentialProvider;
-import com.pokegoapi.exceptions.LoginFailedException;
-import com.pokegoapi.exceptions.RemoteServerException;
 
 import okhttp3.OkHttpClient;
 
-public class ScanTask extends AsyncTask<Void, MapWrapper, Boolean> {
+public class ScanTask extends AsyncTask<Void, MapWrapper, Exception> {
 
     ScanUpdateCallback updateCallback;
     ScanSettings settings;
@@ -45,20 +43,18 @@ public class ScanTask extends AsyncTask<Void, MapWrapper, Boolean> {
     int pos = 0;
 
     @Override
-    protected Boolean doInBackground(Void... voids) {
+    protected Exception doInBackground(Void... voids) {
         OkHttpClient httpClient = new OkHttpClient();
         PokemonGo go;
         try {
             go = new PokemonGo(new PtcCredentialProvider(httpClient, settings.username,
                     settings.password), httpClient);
-        } catch (LoginFailedException e) {
-            return false;
-        } catch (RemoteServerException e) {
-            return false;
+        } catch (Exception e) {
+            return e;
         }
 
         while (pos < settings.locations.size()) {
-            if (isCancelled()) return false;
+            if (isCancelled()) return null;
             go.setLatitude(settings.locations.get(pos).latitude);
             go.setLongitude(settings.locations.get(pos).longitude);
             pos++;
@@ -76,11 +72,11 @@ public class ScanTask extends AsyncTask<Void, MapWrapper, Boolean> {
                 publishProgress(mapWrapper);
 
                 Thread.sleep(settings.delay);
-            } catch (Exception ignored) {
-                ignored.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
-        return true;
+        return null;
     }
 
     @Override
@@ -92,7 +88,7 @@ public class ScanTask extends AsyncTask<Void, MapWrapper, Boolean> {
     }
 
     @Override
-    protected void onPostExecute(Boolean result) {
+    protected void onPostExecute(Exception result) {
         completeCallback.scanComplete(result);
     }
 }

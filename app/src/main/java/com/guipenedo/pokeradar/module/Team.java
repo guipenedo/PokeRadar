@@ -17,6 +17,7 @@
 package com.guipenedo.pokeradar.module;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 
@@ -26,7 +27,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import POGOProtos.Enums.TeamColorOuterClass;
 
 public enum Team {
-    YELLOW(Color.YELLOW, "Team Instinct"), BLUE(Color.BLUE, "Team Mystic"), RED(Color.RED, "Team Valor"), NONE(Color.YELLOW, "No team");
+    YELLOW(Color.YELLOW, "Team Instinct"), BLUE(Color.BLUE, "Team Mystic"), RED(Color.RED, "Team Valor"), NONE(Color.BLACK, "No team");
 
     private int color;
     private String name;
@@ -58,7 +59,14 @@ public enum Team {
     }
 
     public BitmapDescriptor getImage(Context context) {
-        int resourceID = context.getResources().getIdentifier("team_" + toString().toLowerCase(), "drawable", context.getPackageName());
-        return BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(context.getResources(), resourceID));
+        return BitmapDescriptorFactory.fromBitmap(getBitmap(context));
+    }
+
+    public Bitmap getBitmap(Context context) {
+        return BitmapFactory.decodeResource(context.getResources(), getImageResId(context));
+    }
+
+    public int getImageResId(Context context){
+        return context.getResources().getIdentifier("team_" + toString().toLowerCase(), "drawable", context.getPackageName());
     }
 }

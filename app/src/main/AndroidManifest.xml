@@ -86,7 +86,14 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".activities.GymDetailsActivity"></activity>
+        <activity
+            android:name=".activities.GymDetailsActivity"
+            android:label="Gym details"
+            android:parentActivityName=".activities.MapsActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.MapsActivity" />
+        </activity>
     </application>
 
 </manifest>

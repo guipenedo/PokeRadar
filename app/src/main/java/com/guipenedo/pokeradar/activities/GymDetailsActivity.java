@@ -19,24 +19,55 @@ package com.guipenedo.pokeradar.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
 
+import com.guipenedo.pokeradar.DefenderPokemonAdapter;
 import com.guipenedo.pokeradar.R;
 import com.guipenedo.pokeradar.module.PGym;
+import com.guipenedo.pokeradar.module.Team;
 
-import POGOProtos.Data.PokemonDataOuterClass;
+import java.util.ArrayList;
 
 public class GymDetailsActivity extends AppCompatActivity {
+    PGym gym;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gym_details);
         Intent i = getIntent();
-        PGym gymDetails = i.getParcelableExtra("gymDetails");
-        System.out.println("gym points: " + gymDetails.getPoints());
-        for (PokemonDataOuterClass.PokemonData data : gymDetails.getDefendingPokemon()){
-            System.out.println("pokemon: " + data.getPokemonId().toString());
-        }
+        gym = i.getParcelableExtra("gymDetails");
+
+        if (getSupportActionBar() != null)
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        Team team = Team.fromTeamColor(gym.getTeam());
+
+        ImageView imageView = (ImageView) findViewById(R.id.teamImage);
+        imageView.setBackgroundResource(team.getImageResId(this));
+
+        TextView teamName = (TextView) findViewById(R.id.teamName);
+        teamName.setText(team.getName());
+
+        TextView points = (TextView) findViewById(R.id.gymPoints);
+        points.setText(String.format(getString(R.string.gym_details_points), gym.getPoints()));
+
+        ListView listView = (ListView) findViewById(R.id.defenderList);
+        listView.setHeaderDividersEnabled(true);
+        listView.setAdapter(new DefenderPokemonAdapter(this, new ArrayList<>(gym.getDefendingPokemon())));
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // Respond to the action bar's Up/Home button
+            case android.R.id.home:
+                finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 }

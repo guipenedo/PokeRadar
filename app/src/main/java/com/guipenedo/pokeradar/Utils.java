@@ -97,7 +97,13 @@ public class Utils {
     }
 
     public static Bitmap bitmapForPokemon(Context context, int pokemonId){
-        int resourceID = context.getResources().getIdentifier("p" + pokemonId, "drawable", context.getPackageName());
-        return BitmapFactory.decodeResource(context.getResources(), resourceID);
+        return BitmapFactory.decodeResource(context.getResources(), resourceIdForPokemon(context, pokemonId));
+    }
+    public static int resourceIdForPokemon(Context context, int pokemonId){
+        return context.getResources().getIdentifier("p" + pokemonId, "drawable", context.getPackageName());
+    }
+
+    public static String formatPokemonName(String str){
+        return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
     }
 }

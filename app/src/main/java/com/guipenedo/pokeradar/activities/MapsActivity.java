@@ -77,6 +77,8 @@ import com.guipenedo.pokeradar.scan.ScanUpdateCallback;
 import com.guipenedo.pokeradar.activities.settings.MainSettingsActivity;
 import com.pokegoapi.api.map.fort.Pokestop;
 import com.pokegoapi.api.map.pokemon.CatchablePokemon;
+import com.pokegoapi.exceptions.LoginFailedException;
+import com.pokegoapi.exceptions.RemoteServerException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -206,9 +208,6 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         logOut.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
-                SharedPreferences.Editor editor = getSharedPreferences(MapsActivity.preferencesKey, Context.MODE_PRIVATE).edit();
-                editor.putBoolean("login", false);
-                editor.apply();
                 relog();
                 return true;
             }
@@ -238,9 +237,15 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
     }
 
     @Override
-    public void scanComplete(Boolean result) {
-        if (!result)
-            Toast.makeText(MapsActivity.this, R.string.fetch_data_servers_down, Toast.LENGTH_LONG).show();
+    public void scanComplete(Exception result) {
+        if (result != null) {
+            if (result instanceof RemoteServerException)
+                Toast.makeText(MapsActivity.this, R.string.fetch_data_servers_down, Toast.LENGTH_LONG).show();
+            else if (result instanceof LoginFailedException) {
+                Toast.makeText(MapsActivity.this, R.string.error_incorrect_password, Toast.LENGTH_LONG).show();
+                relog();
+            }
+        }
         setScanning(false);
     }
 
@@ -275,7 +280,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         int maxI = t * t * 4;
         int h = t / 2;
 
-        for (int i = 0; i < maxI; i++) {
+        for (int i = 0; i < Math.max(1, maxI); i++) {
             if ((-h <= x) && (x <= h) && (-h <= y) && (y <= h)) {
                 locations.add(new LatLng(location.latitude + x * gpsOffset, location.longitude + y * gpsOffset));
             }
@@ -356,7 +361,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
     public void centerCamera() {
         if (location != null) {
             CameraPosition.Builder builder = new CameraPosition.Builder();
-            builder.zoom(18);
+            builder.zoom(16);
             builder.target(location);
 
             this.mMap.animateCamera(CameraUpdateFactory.newCameraPosition(builder.build()));
@@ -449,6 +454,11 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
                         prestige.setText(String.format(getString(R.string.gym_points), gymMarker.getPoints()));
                         prestige.setGravity(Gravity.CENTER);
                         info.addView(prestige);
+                        TextView clickDetails = new TextView(mContext);
+                        clickDetails.setText("Click for GYM details along with pokemon weaknesses!");
+                        clickDetails.setTypeface(null, Typeface.BOLD);
+                        clickDetails.setGravity(Gravity.CENTER);
+                        info.addView(clickDetails);
                     } else if (marker.type == PMarker.MarkerType.POKEMON) {
                         PPokemon pokemonMarker = (PPokemon) marker;
                         timestamp = pokemonMarker.getTimestamp();
@@ -550,7 +560,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
     public void onConnected(@Nullable Bundle bundle) {
         if (LocationServices.FusedLocationApi.getLastLocation(googleApiClient) != null) {
             location = Utils.locationToLatLng(LocationServices.FusedLocationApi.getLastLocation(googleApiClient));
-            update();
+            if (center == null) update();
         } else
             Toast.makeText(this, R.string.error_location_services_disabled, Toast.LENGTH_LONG).show();
     }
@@ -668,7 +678,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         if (pokemon.contains(data.getEncounterId()) || !mainPrefs.getBoolean("pref_key_show_pokemon_" + data.getPokemonId().getNumber(), true))
             return;
         LatLng location = new LatLng(data.getLatitude(), data.getLongitude());
-        Marker m = addMarker(data.getPokemonId().toString(), location, new PPokemon(data), BitmapDescriptorFactory.fromBitmap(Utils.bitmapForPokemon(this, data.getPokemonId().getNumber())));
+        Marker m = addMarker(Utils.formatPokemonName(data.getPokemonId().toString()), location, new PPokemon(data), BitmapDescriptorFactory.fromBitmap(Utils.bitmapForPokemon(this, data.getPokemonId().getNumber())));
         updatePokemon(m);
         pokemon.add(data.getEncounterId());
     }
@@ -693,6 +703,9 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
     }
 
     public void relog() {
+        SharedPreferences.Editor editor = getSharedPreferences(MapsActivity.preferencesKey, Context.MODE_PRIVATE).edit();
+        editor.putBoolean("login", false);
+        editor.apply();
         Intent i = new Intent(getBaseContext(), LoginActivity.class);
         startActivity(i);
     }
