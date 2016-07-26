@@ -455,7 +455,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
                         prestige.setGravity(Gravity.CENTER);
                         info.addView(prestige);
                         TextView clickDetails = new TextView(mContext);
-                        clickDetails.setText("Click for GYM details along with pokemon weaknesses!");
+                        clickDetails.setText("Click for GYM details and pokemon stats!");
                         clickDetails.setTypeface(null, Typeface.BOLD);
                         clickDetails.setGravity(Gravity.CENTER);
                         info.addView(clickDetails);

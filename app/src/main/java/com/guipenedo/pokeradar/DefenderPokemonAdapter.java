@@ -44,16 +44,13 @@ public class DefenderPokemonAdapter extends ArrayAdapter<PokemonDataOuterClass.P
         pokemonImage.setBackgroundResource(Utils.resourceIdForPokemon(convertView.getContext(), item.getPokemonId().getNumber()));
 
         TextView pokemonName = (TextView) convertView.findViewById(R.id.pokemonName);
-        pokemonName.setText(Utils.formatPokemonName(item.getPokemonId().toString()));
+        pokemonName.setText(Utils.formatPokemonName(item.getPokemonId().toString()) + " CP" + item.getCp());
 
-        TextView pokemonCp = (TextView) convertView.findViewById(R.id.pokemonCp);
-        pokemonCp.setText("CP: " + item.getCp());
+        TextView stats = (TextView) convertView.findViewById(R.id.pokemonStats);
+        stats.setText(String.format("Attack/Defense/Stamina: %d/%d/%d", item.getIndividualAttack(), item.getIndividualDefense(), item.getIndividualStamina()));
 
-        TextView attack = (TextView) convertView.findViewById(R.id.pokemonattack);
-        attack.setText("Attack: " + item.getIndividualAttack());
-
-        TextView stamina = (TextView) convertView.findViewById(R.id.pokemonstamina);
-        stamina.setText("Stamina: " + item.getIndividualStamina());
+        TextView ivratio = (TextView) convertView.findViewById(R.id.pokemonIvratio);
+        ivratio.setText(String.format("IV Ratio: %.2f", Utils.getIvRatio(item.getIndividualAttack(), item.getIndividualStamina(), item.getIndividualStamina())));
 
         return convertView;
     }

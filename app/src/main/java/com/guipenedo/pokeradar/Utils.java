@@ -106,4 +106,8 @@ public class Utils {
     public static String formatPokemonName(String str){
         return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
     }
+
+    public static double getIvRatio(int attack, int defense, int stamina) {
+        return (attack + defense + stamina) / 45.0;
+    }
 }

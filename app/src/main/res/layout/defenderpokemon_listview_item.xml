@@ -48,22 +48,17 @@
                 android:textSize="20sp"
                 android:textColor="#000"
                 android:id="@+id/pokemonName" />
-
+            
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="16sp"
-                android:id="@+id/pokemonCp" />
+                android:id="@+id/pokemonStats" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="16sp"
-                android:id="@+id/pokemonattack" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="16sp"
-                android:id="@+id/pokemonstamina" />
+                android:id="@+id/pokemonIvratio" />
 
 
         </LinearLayout>
@@ -76,6 +71,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/imageView"
+            android:visibility="invisible"
             android:background="@drawable/abc_ic_go_search_api_material"
             android:layout_gravity="center_vertical" />
     </LinearLayout>
