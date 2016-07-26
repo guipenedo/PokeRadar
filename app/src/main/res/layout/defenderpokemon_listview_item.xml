@@ -72,7 +72,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/imageView"
             android:visibility="invisible"
-            android:background="@drawable/abc_ic_go_search_api_material"
+            android:background="@drawable/arrow_right"
             android:layout_gravity="center_vertical" />
     </LinearLayout>
 </RelativeLayout>
