@@ -38,10 +38,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.pokegoapi.auth.PTCLogin;
+import com.pokegoapi.api.PokemonGo;
+import com.pokegoapi.auth.PtcCredentialProvider;
 import com.pokegoapi.exceptions.LoginFailedException;
+import com.pokegoapi.exceptions.RemoteServerException;
 
-import POGOProtos.Networking.Envelopes.RequestEnvelopeOuterClass;
 import okhttp3.OkHttpClient;
 
 
@@ -201,7 +202,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+    public class UserLoginTask extends AsyncTask<Void, Void, Exception> {
 
         private final String mUsername;
         private final String mPassword;
@@ -212,35 +213,36 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
 
         @Override
-        protected Boolean doInBackground(Void... params) {
+        protected Exception doInBackground(Void... params) {
 
             OkHttpClient httpClient = new OkHttpClient();
-            RequestEnvelopeOuterClass.RequestEnvelope.AuthInfo auth;
             try {
-                auth = new PTCLogin(httpClient).login(mUsername, mPassword);
-            } catch (LoginFailedException e) {
-                return false;
+                new PokemonGo(new PtcCredentialProvider(httpClient, mUsername,
+                    mPassword), httpClient);
+            } catch (Exception e) {
+                return e;
             }
-
-            if (!auth.hasToken()) return false;
 
             SharedPreferences.Editor editor = getSharedPreferences(MapsActivity.preferencesKey, Context.MODE_PRIVATE).edit();
             editor.putBoolean("login", true);
             editor.putString("username", mUsername);
             editor.putString("password", mPassword);
             editor.apply();
-            return true;
+            return null;
         }
 
         @Override
-        protected void onPostExecute(final Boolean success) {
+        protected void onPostExecute(final Exception e) {
             mAuthTask = null;
             showProgress(false);
 
-            if (success) {
+            if (e == null) {
                 finish();
-            } else {
+            } else if (e instanceof LoginFailedException){
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
+                mPasswordView.requestFocus();
+            }else if (e instanceof RemoteServerException){
+                mPasswordView.setError(getString(R.string.login_server_exception));
                 mPasswordView.requestFocus();
             }
         }

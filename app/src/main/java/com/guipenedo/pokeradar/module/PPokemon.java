@@ -14,11 +14,25 @@
  * limitations under the License.
  */
 
-package com.guipenedo.pokeradar.scan;
+package com.guipenedo.pokeradar.module;
 
-import com.google.android.gms.maps.model.LatLng;
-import com.guipenedo.pokeradar.module.MapWrapper;
+import com.pokegoapi.api.map.pokemon.CatchablePokemon;
+import com.pokegoapi.exceptions.LoginFailedException;
+import com.pokegoapi.exceptions.RemoteServerException;
 
-public interface ScanUpdateCallback {
-    void scanUpdate(MapWrapper map, int progress, LatLng location);
+public class PPokemon extends PMarker {
+    private long timestamp;
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public PPokemon(long timestamp) {
+        super(MarkerType.POKEMON);
+        this.timestamp = timestamp;
+    }
+
+    public PPokemon(CatchablePokemon pokemon) throws LoginFailedException, RemoteServerException {
+        this(pokemon.getExpirationTimestampMs());
+    }
 }

@@ -41,8 +41,8 @@ import java.util.concurrent.TimeUnit;
 
 public class Utils {
 
-    public static String countdownFromMillis(long millis) {
-        return String.format(Locale.US, "%dmin, %dsec",
+    public static String countdownFromMillis(Context context, long millis) {
+        return String.format(Locale.US, context.getString(R.string.countdown),
                 TimeUnit.MILLISECONDS.toMinutes(millis),
                 TimeUnit.MILLISECONDS.toSeconds(millis) -
                         TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis))

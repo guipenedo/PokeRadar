@@ -16,17 +16,14 @@
 
 package com.guipenedo.pokeradar.module;
 
-import POGOProtos.Enums.TeamColorOuterClass;
-
-public class PokemonMarker {
-    public String text;
-    public long timestamp;
-    public TeamColorOuterClass.TeamColor team;
-    public long prestige;
+public class PMarker {
     public MarkerType type;
 
-    public PokemonMarker(MarkerType type) {
+    public PMarker(MarkerType type) {
         this.type = type;
+    }
+
+    public PMarker() {
     }
 
     public enum MarkerType {

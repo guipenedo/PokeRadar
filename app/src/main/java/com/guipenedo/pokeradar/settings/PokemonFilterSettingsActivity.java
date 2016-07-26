@@ -34,11 +34,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.guipenedo.pokeradar.R;
+import com.guipenedo.pokeradar.Utils;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.guipenedo.pokeradar.Utils;
 
 public class PokemonFilterSettingsActivity extends PreferenceActivity {
 
@@ -49,7 +50,7 @@ public class PokemonFilterSettingsActivity extends PreferenceActivity {
         super.onCreate(savedInstanceState);
         PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(this);
         PreferenceCategory category = new PreferenceCategory(this);
-        category.setTitle("Filter pokemons");
+        category.setTitle(R.string.filter_pokemons);
         screen.addPreference(category);
         try {
             JSONArray pokemonList = new JSONArray(Utils.loadJSONFromFile(this, "pokemon.json"));
@@ -59,7 +60,7 @@ public class PokemonFilterSettingsActivity extends PreferenceActivity {
                 checkBox.setTitle(pokemon.getString("Name"));
                 checkBox.setIcon(new BitmapDrawable(getResources(), Utils.bitmapForPokemon(this, Integer.parseInt(pokemon.getString("Number")))));
                 checkBox.setDefaultValue(true);
-                checkBox.setSummary("Show " + pokemon.getString("Name"));
+                checkBox.setSummary(String.format(getString(R.string.setting_filter_pokemon_summary), pokemon.getString("Name")));
                 checkBox.setKey("pref_key_show_pokemon_" + Integer.parseInt(pokemon.getString("Number")));
                 category.addPreference(checkBox);
             }

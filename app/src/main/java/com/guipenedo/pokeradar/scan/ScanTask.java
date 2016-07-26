@@ -18,15 +18,17 @@ package com.guipenedo.pokeradar.scan;
 
 import android.os.AsyncTask;
 
+import com.guipenedo.pokeradar.module.MapWrapper;
 import com.pokegoapi.api.PokemonGo;
+import com.pokegoapi.api.map.Map;
 import com.pokegoapi.api.map.MapObjects;
-import com.pokegoapi.auth.PTCLogin;
+import com.pokegoapi.auth.PtcCredentialProvider;
 import com.pokegoapi.exceptions.LoginFailedException;
+import com.pokegoapi.exceptions.RemoteServerException;
 
-import POGOProtos.Networking.Envelopes.RequestEnvelopeOuterClass;
 import okhttp3.OkHttpClient;
 
-public class ScanTask extends AsyncTask<Void, MapObjects, Boolean> {
+public class ScanTask extends AsyncTask<Void, MapWrapper, Boolean> {
 
     ScanUpdateCallback updateCallback;
     ScanSettings settings;
@@ -43,22 +45,29 @@ public class ScanTask extends AsyncTask<Void, MapObjects, Boolean> {
     @Override
     protected Boolean doInBackground(Void... voids) {
         OkHttpClient httpClient = new OkHttpClient();
-        RequestEnvelopeOuterClass.RequestEnvelope.AuthInfo auth;
+        PokemonGo go;
         try {
-            auth = new PTCLogin(httpClient).login(settings.username, settings.password);
+            go = new PokemonGo(new PtcCredentialProvider(httpClient, settings.username,
+                    settings.password), httpClient);
         } catch (LoginFailedException e) {
+            return false;
+        } catch (RemoteServerException e) {
             return false;
         }
 
         while (pos < settings.locations.size()) {
             if (isCancelled()) return false;
-            PokemonGo go = new PokemonGo(auth, httpClient);
             go.setLatitude(settings.locations.get(pos).latitude);
             go.setLongitude(settings.locations.get(pos).longitude);
             pos++;
-
             try {
-                publishProgress(go.getMap().getMapObjects());
+                Map map = go.getMap();
+                MapObjects objects = map.getMapObjects();
+                MapWrapper mapWrapper = new MapWrapper(objects.getPokestops(), map.getGyms(), map.getCatchablePokemon());
+                mapWrapper.getSpawnpoints().addAll(objects.getDecimatedSpawnPoints());
+                mapWrapper.getSpawnpoints().addAll(objects.getSpawnPoints());
+                publishProgress(mapWrapper);
+
                 Thread.sleep(settings.delay);
             } catch (Exception ignored) {
             }
@@ -67,11 +76,11 @@ public class ScanTask extends AsyncTask<Void, MapObjects, Boolean> {
     }
 
     @Override
-    protected void onProgressUpdate(MapObjects... objects) {
+    protected void onProgressUpdate(MapWrapper... objects) {
         if (objects.length < 1 || isCancelled()) return;
 
-        MapObjects object = objects[0];
-        updateCallback.scanUpdate(object, (100 * pos) / settings.locations.size(), settings.locations.get(pos - 1));
+        MapWrapper map = objects[0];
+        updateCallback.scanUpdate(map, (100 * pos) / settings.locations.size(), settings.locations.get(pos - 1));
     }
 
     @Override

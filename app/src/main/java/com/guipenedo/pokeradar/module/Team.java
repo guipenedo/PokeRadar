@@ -58,6 +58,7 @@ public enum Team {
     }
 
     public BitmapDescriptor getImage(Context context) {
+        System.out.println(toString());
         int resourceID = context.getResources().getIdentifier(name.toLowerCase().replaceAll(" ", "_"), "drawable", context.getPackageName());
         return BitmapDescriptorFactory.fromBitmap(BitmapFactory.decodeResource(context.getResources(), resourceID));
     }
