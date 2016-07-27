@@ -7,6 +7,7 @@ Android scanner app for pokemon go.
 <img alt="Lured pokestop countdow" src="https://raw.githubusercontent.com/guipenedo/PokeRadar/master/screenshots/screenshot4.png" width="200">
 <img alt="Settings" src="https://raw.githubusercontent.com/guipenedo/PokeRadar/master/screenshots/screenshot5.png" width="200">
 <img alt="Filter pokemon" src="https://raw.githubusercontent.com/guipenedo/PokeRadar/master/screenshots/screenshot6.png" width="200">
+<img alt="Gym details" src="https://raw.githubusercontent.com/guipenedo/PokeRadar/master/screenshots/screenshot7.png" width="200">
 </p>
 
 #How to install
@@ -33,5 +34,9 @@ Simply login with a throwaway PTC account (create one at https://www.pokemon.com
 * Progressbars to display progress
 * Cancel button
 * Expected scan time
+* Display dym details
+* View list of pokemons defending gym
+* View pokemon defending gyms' stats: iv attack, defense and stamina
+* View the IV ratio of pokemons defending gyms!
 
 If you have any issues/features create an issue here on github.
