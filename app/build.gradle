@@ -32,14 +32,15 @@ repositories {
 
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.1"
+    compileSdkVersion 22
+    buildToolsVersion "22.0.1"
     defaultConfig {
+        multiDexEnabled true
         applicationId "com.guipenedo.pokeradar"
         minSdkVersion 14
         targetSdkVersion 22
         versionCode 1
-        versionName "1.0"
+        versionName "1.1"
     }
     buildTypes {
         release {
@@ -48,6 +49,9 @@ android {
         }
     }
     productFlavors {
+    }
+    lintOptions {
+        disable 'InvalidPackage'
     }
 }
 
@@ -62,10 +66,5 @@ dependencies {
     compile 'com.google.android.gms:play-services-maps:9.2.1'
     compile 'com.android.support:appcompat-v7:24.1.0'
     compile 'com.android.support:support-v4:24.1.0'
-    compile 'com.google.android.gms:play-services-appindexing:9.2.1'
     compile 'com.android.support:design:24.1.0'
-    compile 'com.google.android.gms:play-services:9.2.1'
-    compile 'com.google.android.gms:play-services-ads:9.2.1'
-    compile 'com.google.android.gms:play-services-auth:9.2.1'
-    compile 'com.google.android.gms:play-services-gcm:9.2.1'
 }

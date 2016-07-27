@@ -32,7 +32,7 @@
             android:title="Filter pokemons">
             <intent
                 android:action="android.intent.action.VIEW"
-                android:targetClass="com.guipenedo.pokeradar.settings.PokemonFilterSettingsActivity"
+                android:targetClass="com.guipenedo.pokeradar.activities.settings.PokemonFilterSettingsActivity"
                 android:targetPackage="com.guipenedo.pokeradar" />
         </Preference>
 
