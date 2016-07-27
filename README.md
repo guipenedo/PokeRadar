@@ -7,7 +7,7 @@ Android scanner app for pokemon go.
 <img alt="Lured pokestop countdow" src="https://raw.githubusercontent.com/guipenedo/PokeRadar/master/screenshots/screenshot4.png" width="200">
 <img alt="Settings" src="https://raw.githubusercontent.com/guipenedo/PokeRadar/master/screenshots/screenshot5.png" width="200">
 <img alt="Filter pokemon" src="https://raw.githubusercontent.com/guipenedo/PokeRadar/master/screenshots/screenshot6.png" width="200">
-<img alt="Gym details" src="https://raw.githubusercontent.com/guipenedo/PokeRadar/master/screenshots/screenshot7.png" width="200">
+<img alt="Gym details" src="https://raw.githubusercontent.com/guipenedo/PokeRadar/master/screenshots/screenshotgym.png" width="200">
 </p>
 
 #How to install
