@@ -32,8 +32,8 @@ repositories {
 
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.1"
+    compileSdkVersion 22
+    buildToolsVersion "22.0.1"
     defaultConfig {
         multiDexEnabled true
         applicationId "com.guipenedo.pokeradar"
