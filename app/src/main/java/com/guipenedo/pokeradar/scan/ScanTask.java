@@ -18,6 +18,7 @@ package com.guipenedo.pokeradar.scan;
 
 import android.os.AsyncTask;
 
+import com.guipenedo.pokeradar.activities.MapsActivity;
 import com.guipenedo.pokeradar.module.MapWrapper;
 import com.guipenedo.pokeradar.module.PGym;
 import com.pokegoapi.api.PokemonGo;
@@ -44,7 +45,7 @@ public class ScanTask extends AsyncTask<Void, MapWrapper, Exception> {
 
     @Override
     protected Exception doInBackground(Void... voids) {
-        OkHttpClient httpClient = new OkHttpClient();
+        OkHttpClient httpClient = MapsActivity.getHttp();
         PokemonGo go;
         try {
             go = new PokemonGo(new PtcCredentialProvider(httpClient, settings.username,

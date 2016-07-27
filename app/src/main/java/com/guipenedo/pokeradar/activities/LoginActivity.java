@@ -216,7 +216,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         @Override
         protected Exception doInBackground(Void... params) {
 
-            OkHttpClient httpClient = new OkHttpClient();
+            OkHttpClient httpClient = MapsActivity.getHttp();
             try {
                 new PokemonGo(new PtcCredentialProvider(httpClient, mUsername,
                     mPassword), httpClient);
