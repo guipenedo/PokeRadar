@@ -11,6 +11,7 @@ cache:
     - $HOME/.gradle/wrapper/
 android:
   components:
-    - build-tools-24.0.1
-    - tools # to get the new `repository-11.xml`
-    - tools 
+    - platform-tools
+    - build-tools-22.0.1
+    - android-22
+    - sys-img-armeabi-v7a-android-22
