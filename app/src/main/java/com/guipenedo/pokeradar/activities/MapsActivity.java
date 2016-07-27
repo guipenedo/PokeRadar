@@ -91,6 +91,7 @@ import java.util.TreeSet;
 import POGOProtos.Map.Fort.FortDataOuterClass;
 import POGOProtos.Map.SpawnPointOuterClass;
 import io.fabric.sdk.android.Fabric;
+import okhttp3.OkHttpClient;
 
 public class MapsActivity extends AppCompatActivity implements LocationListener, OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ScanUpdateCallback, ScanCompleteCallback {
 
@@ -122,6 +123,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
     private Button cancelScanButton;
 
     private ScanTask scanTask;
+    private static OkHttpClient http;
 
     //settings
     private SharedPreferences mainPrefs;
@@ -305,6 +307,12 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         UpdateRunnable runnable = new UpdateRunnable(marker);
         updateTasks.put(marker.getId(), runnable);
         handler.postDelayed(runnable, interval);
+    }
+
+    public static OkHttpClient getHttp() {
+        if (http == null)
+            http = new OkHttpClient();
+        return http;
     }
 
     private class UpdateRunnable implements Runnable {
