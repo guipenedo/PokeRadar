@@ -25,8 +25,15 @@ import com.pokegoapi.api.PokemonGo;
 import com.pokegoapi.api.gym.Gym;
 import com.pokegoapi.api.map.Map;
 import com.pokegoapi.api.map.MapObjects;
+import com.pokegoapi.api.map.pokemon.CatchablePokemon;
 import com.pokegoapi.auth.PtcCredentialProvider;
 
+import java.util.HashSet;
+import java.util.Iterator;
+
+import POGOProtos.Map.Fort.FortDataOuterClass;
+import POGOProtos.Map.Pokemon.MapPokemonOuterClass;
+import POGOProtos.Map.Pokemon.WildPokemonOuterClass;
 import okhttp3.OkHttpClient;
 
 public class ScanTask extends AsyncTask<Void, MapWrapper, Exception> {
@@ -63,13 +70,35 @@ public class ScanTask extends AsyncTask<Void, MapWrapper, Exception> {
                 Map map = go.getMap();
                 MapObjects objects = map.getMapObjects();
                 MapWrapper mapWrapper = new MapWrapper();
-                mapWrapper.getPokemon().addAll(map.getCatchablePokemon());
-                mapWrapper.getPokestops().addAll(objects.getPokestops());
-                mapWrapper.getSpawnpoints().addAll(objects.getDecimatedSpawnPoints());
-                mapWrapper.getSpawnpoints().addAll(objects.getSpawnPoints());
-                for (Gym gym : map.getGyms()){
-                    mapWrapper.getGyms().add(new PGym(gym));
+                if (settings.pokemon) {
+                    HashSet<CatchablePokemon> catchablePokemons = new HashSet<>();
+                    Iterator var3 = objects.getCatchablePokemons().iterator();
+
+                    while(var3.hasNext()) {
+                        MapPokemonOuterClass.MapPokemon wildPokemon = (MapPokemonOuterClass.MapPokemon)var3.next();
+                        catchablePokemons.add(new CatchablePokemon(go, wildPokemon));
+                    }
+
+                    var3 = objects.getWildPokemons().iterator();
+
+                    while(var3.hasNext()) {
+                        WildPokemonOuterClass.WildPokemon wildPokemon1 = (WildPokemonOuterClass.WildPokemon)var3.next();
+                        catchablePokemons.add(new CatchablePokemon(go, wildPokemon1));
+                    }
+
+                    mapWrapper.getPokemon().addAll(catchablePokemons);
                 }
+                if (settings.pokestops)
+                    mapWrapper.getPokestops().addAll(objects.getPokestops());
+                if (settings.spawnpoints) {
+                    mapWrapper.getSpawnpoints().addAll(objects.getDecimatedSpawnPoints());
+                    mapWrapper.getSpawnpoints().addAll(objects.getSpawnPoints());
+                }
+                if (settings.gyms)
+                    for (FortDataOuterClass.FortData fortdata : objects.getGyms()) {
+                        Thread.sleep(300);
+                        mapWrapper.getGyms().add(new PGym(new Gym(go, fortdata)));
+                    }
                 publishProgress(mapWrapper);
 
                 Thread.sleep(settings.delay);

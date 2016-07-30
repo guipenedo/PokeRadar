@@ -21,9 +21,10 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.List;
 
 public class ScanSettings {
-    final String username, password;
-    List<LatLng> locations;
-    int delay;
+    public final String username, password;
+    public List<LatLng> locations;
+    public boolean gyms = true, pokemon = true, pokestops = true, spawnpoints = true;
+    public int delay;
 
     public ScanSettings(String username, String password, List<LatLng> locations, int delay) {
         this.username = username;

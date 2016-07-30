@@ -64,6 +64,7 @@ import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.guipenedo.pokeradar.R;
 import com.guipenedo.pokeradar.Utils;
+import com.guipenedo.pokeradar.activities.settings.MainSettingsActivity;
 import com.guipenedo.pokeradar.module.MapWrapper;
 import com.guipenedo.pokeradar.module.PGym;
 import com.guipenedo.pokeradar.module.PMarker;
@@ -74,7 +75,6 @@ import com.guipenedo.pokeradar.scan.ScanCompleteCallback;
 import com.guipenedo.pokeradar.scan.ScanSettings;
 import com.guipenedo.pokeradar.scan.ScanTask;
 import com.guipenedo.pokeradar.scan.ScanUpdateCallback;
-import com.guipenedo.pokeradar.activities.settings.MainSettingsActivity;
 import com.pokegoapi.api.map.fort.Pokestop;
 import com.pokegoapi.api.map.pokemon.CatchablePokemon;
 import com.pokegoapi.exceptions.LoginFailedException;
@@ -234,6 +234,10 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         Toast.makeText(this, String.format(getString(R.string.expected_scan_time), Utils.countdownFromMillis(this, 1000 * secondsBetweenRequests * (1 + steps * 2) * (1 + steps * 2))), Toast.LENGTH_LONG).show();
 
         ScanSettings settings = new ScanSettings(username, password, getScanLocations(location, steps), secondsBetweenRequests * 1000);
+        settings.gyms = showGyms;
+        settings.pokemon = showPokemons;
+        settings.pokestops = showPokestops;
+        settings.spawnpoints = showSpawnpoints;
         scanTask = new ScanTask(settings, this, this);
         scanTask.execute();
     }
