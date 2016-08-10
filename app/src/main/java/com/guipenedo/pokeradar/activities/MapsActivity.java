@@ -75,10 +75,9 @@ import com.guipenedo.pokeradar.scan.ScanCompleteCallback;
 import com.guipenedo.pokeradar.scan.ScanSettings;
 import com.guipenedo.pokeradar.scan.ScanTask;
 import com.guipenedo.pokeradar.scan.ScanUpdateCallback;
+import com.pokegoapi.api.map.Point;
 import com.pokegoapi.api.map.fort.Pokestop;
 import com.pokegoapi.api.map.pokemon.CatchablePokemon;
-import com.pokegoapi.exceptions.LoginFailedException;
-import com.pokegoapi.exceptions.RemoteServerException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -86,49 +85,75 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
+import POGOProtos.Enums.PokemonIdOuterClass;
 import POGOProtos.Map.Fort.FortDataOuterClass;
-import POGOProtos.Map.SpawnPointOuterClass;
 import io.fabric.sdk.android.Fabric;
 import okhttp3.OkHttpClient;
 
 public class MapsActivity extends AppCompatActivity implements LocationListener, OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ScanUpdateCallback, ScanCompleteCallback {
 
-    public static final String preferencesKey = "PGORADAR";
-    private Handler handler = new Handler();
-    private String username, password;
 
+    private static OkHttpClient http;
+    private final double gpsOffset = 0.0015;
+    private Handler handler = new Handler();
     //display items
     private HashMap<String, PMarker> pokemonMarkers = new HashMap<>();
     private HashMap<String, Runnable> updateTasks = new HashMap<>();
-    private Set<Long> pokemon = new TreeSet<>();
-    private Set<String> forts = new TreeSet<>(), spawnpoints = new TreeSet<>();
-
+    private Set<Long> pokemon = new HashSet<>();
+    private HashMap<String, Marker> luredPokemon = new HashMap<>();
+    private Set<String> forts = new HashSet<>(), spawnpoints = new HashSet<>();
     //maps stuff
     private GoogleMap mMap;
     private LatLng location;
     private GoogleApiClient googleApiClient;
-    private Marker center;
+    private Marker center, rangeCenter;
     private Circle scanRange;
     private Polygon scanArea;
     private Set<Marker> markers = new HashSet<>();
     private String countdownMarker;
-    private final double gpsOffset = 0.0015;
-
     //ui elements
     private ProgressBar progressBar;
     private Button scanButton;
     private ProgressBar scanProgressBar;
     private Button cancelScanButton;
-
-    private ScanTask scanTask;
-    private static OkHttpClient http;
-
+    private ScanTask scanMap;
     //settings
     private SharedPreferences mainPrefs;
-    private boolean showGyms, showPokemons, showPokestops, showSpawnpoints, showScanCenters, showScanArea;
-    private int secondsBetweenRequests, steps;
+    private boolean showGyms, showPokemons, showPokestops, showSpawnpoints, showScanArea;
+    private int steps;
+    private SharedPreferences.OnSharedPreferenceChangeListener preferencesChangelistener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+            mainPrefs = prefs;
+            loadPrefs();
+            for (Marker m : new ArrayList<>(markers)) {
+                if (m == null || !pokemonMarkers.containsKey(m.getId())) continue;
+                PMarker marker = pokemonMarkers.get(m.getId());
+                if ((marker.type == PMarker.MarkerType.POKEMON && !showPokemons)
+                        || ((marker.type == PMarker.MarkerType.POKESTOP || marker.type == PMarker.MarkerType.LUREDPOKESTOP) && !showPokestops)
+                        || (marker.type == PMarker.MarkerType.GYM && !showGyms)
+                        || (marker.type == PMarker.MarkerType.SPAWNPOINT && !showSpawnpoints)) {
+                    forts.remove(marker.getId());
+                    luredPokemon.remove(marker.getId());
+                    if (marker.type == PMarker.MarkerType.POKEMON)
+                        pokemon.remove(Long.parseLong(marker.getId()));
+                    spawnpoints.remove(marker.getId());
+
+                    removeMarker(m);
+                }
+            }
+            if (scanArea != null) scanArea.remove();
+            if (showScanArea)
+                scanArea = mMap.addPolygon(new PolygonOptions().addAll(createRectangle(location, steps * gpsOffset)).fillColor(Color.argb(20, 50, 0, 255)));
+        }
+    };
+
+    public static OkHttpClient getHttp() {
+        if (http == null)
+            http = new OkHttpClient();
+        return http;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -163,10 +188,9 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
             @Override
             public void onClick(View view) {
                 stopTasks();
-                if (scanTask != null && !scanTask.isCancelled())
-                    scanTask.cancel(true);
+                if (scanMap != null && !scanMap.isCancelled())
+                    scanMap.cancel(true);
                 setScanning(false);
-                clearAll();
                 update();
             }
         });
@@ -179,6 +203,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         mMap.clear();
         markers.clear();
         forts.clear();
+        luredPokemon.clear();
         pokemon.clear();
         spawnpoints.clear();
         pokemonMarkers.clear();
@@ -210,7 +235,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         logOut.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
-                relog();
+                Utils.relog(MapsActivity.this);
                 return true;
             }
         });
@@ -228,30 +253,20 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         if (mMap == null || location == null) return;
 
         setScanning(true);
-        clearAll();
         update();
-        stopTasks();
-        Toast.makeText(this, String.format(getString(R.string.expected_scan_time), Utils.countdownFromMillis(this, 1000 * secondsBetweenRequests * (1 + steps * 2) * (1 + steps * 2))), Toast.LENGTH_LONG).show();
+        Toast.makeText(this, String.format(getString(R.string.expected_scan_time), Utils.countdownFromMillis(this, 6200 * (1 + steps * 2) * (1 + steps * 2))), Toast.LENGTH_LONG).show();
 
-        ScanSettings settings = new ScanSettings(username, password, getScanLocations(location, steps), secondsBetweenRequests * 1000);
+        ScanSettings settings = new ScanSettings(MainActivity.username, MainActivity.password, getScanLocations(location, steps));
         settings.gyms = showGyms;
         settings.pokemon = showPokemons;
         settings.pokestops = showPokestops;
         settings.spawnpoints = showSpawnpoints;
-        scanTask = new ScanTask(settings, this, this);
-        scanTask.execute();
+        scanMap = new ScanTask(settings, this, this);
+        scanMap.execute();
     }
 
     @Override
-    public void scanComplete(Exception result) {
-        if (result != null) {
-            if (result instanceof RemoteServerException)
-                Toast.makeText(MapsActivity.this, R.string.fetch_data_servers_down, Toast.LENGTH_LONG).show();
-            else if (result instanceof LoginFailedException) {
-                Toast.makeText(MapsActivity.this, R.string.error_incorrect_password, Toast.LENGTH_LONG).show();
-                relog();
-            }
-        }
+    public void scanComplete() {
         setScanning(false);
     }
 
@@ -270,11 +285,12 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
             for (CatchablePokemon pokemon : map.getPokemon())
                 addPokemon(pokemon);
         if (showSpawnpoints)
-            for (SpawnPointOuterClass.SpawnPoint data : map.getSpawnpoints())
+            for (Point data : map.getSpawnpoints())
                 addSpawnpoint(data);
-        if (showScanCenters)
-            addMarker(getString(R.string.scan_center), location, null, false);
 
+        if (rangeCenter == null)
+            rangeCenter = mMap.addMarker(new MarkerOptions().position(location).title("SCAN CENTER").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+        rangeCenter.setPosition(location);
         scanRange.setCenter(location);
         progressBar.setProgress(progress);
     }
@@ -313,40 +329,10 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         handler.postDelayed(runnable, interval);
     }
 
-    public static OkHttpClient getHttp() {
-        if (http == null)
-            http = new OkHttpClient();
-        return http;
-    }
-
-    private class UpdateRunnable implements Runnable {
-        Marker marker;
-
-        public UpdateRunnable(Marker marker) {
-            this.marker = marker;
-        }
-
-        @Override
-        public void run() {
-
-            updateTasks.remove(marker.getId());
-
-            PMarker pMarker = pokemonMarkers.get(marker.getId());
-            if (pMarker == null) return;
-
-            if (pMarker.type == PMarker.MarkerType.LUREDPOKESTOP) {
-                addPokestop(marker.getPosition());
-                removeMarker(marker);
-            } else if (pMarker.type == PMarker.MarkerType.POKEMON) {
-                updatePokemon(marker);
-            }
-        }
-    }
-
     public void setScanning(boolean scanning) {
         if (scanRange != null) scanRange.remove();
         if (scanning) {
-            scanRange = mMap.addCircle(new CircleOptions().center(location).strokeColor(Color.argb(32, 29, 132, 181)).radius(50));
+            scanRange = mMap.addCircle(new CircleOptions().center(location).strokeColor(Color.argb(50, 29, 132, 181)).fillColor(Color.argb(30, 29, 132, 181)).radius(50));
             scanButton.setVisibility(View.INVISIBLE);
             scanProgressBar.setVisibility(View.VISIBLE);
             cancelScanButton.setVisibility(View.VISIBLE);
@@ -358,6 +344,8 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
             cancelScanButton.setVisibility(View.INVISIBLE);
             progressBar.setVisibility(View.INVISIBLE);
             scanRange = null;
+            if (rangeCenter != null) rangeCenter.remove();
+            rangeCenter = null;
         }
     }
 
@@ -368,6 +356,14 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
                     android.Manifest.permission.ACCESS_FINE_LOCATION,
                     android.Manifest.permission.ACCESS_COARSE_LOCATION}, 1400);
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        stopTasks();
+        if (scanMap != null && !scanMap.isCancelled())
+            scanMap.cancel(true);
     }
 
     public void centerCamera() {
@@ -400,6 +396,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
             @Override
             public boolean onMyLocationButtonClick() {
                 onConnected(null);
+                update();
                 return true;
             }
         });
@@ -467,7 +464,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
                         prestige.setGravity(Gravity.CENTER);
                         info.addView(prestige);
                         TextView clickDetails = new TextView(mContext);
-                        clickDetails.setText("Click for GYM details and pokemon stats!");
+                        clickDetails.setText(R.string.gym_details);
                         clickDetails.setTypeface(null, Typeface.BOLD);
                         clickDetails.setGravity(Gravity.CENTER);
                         info.addView(clickDetails);
@@ -587,42 +584,9 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         googleApiClient.connect();
         super.onStart();
         mainPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        showPokemons = mainPrefs.getBoolean("pref_key_show_pokemon", true);
-        showGyms = mainPrefs.getBoolean("pref_key_show_gyms", true);
-        showPokestops = mainPrefs.getBoolean("pref_key_show_pokestops", true);
-        showSpawnpoints = mainPrefs.getBoolean("pref_key_show_spawnpoints", false);
-        showScanCenters = mainPrefs.getBoolean("pref_key_show_centers", false);
-        try {
-            secondsBetweenRequests = Integer.parseInt(mainPrefs.getString("pref_key_delay", "2"));
-        } catch (NumberFormatException e) {
-            Toast.makeText(this, R.string.error_delay_invalid, Toast.LENGTH_LONG).show();
-            secondsBetweenRequests = 2;
-        }
-        try {
-            steps = Integer.parseInt(mainPrefs.getString("pref_key_steps", "4"));
-        } catch (NumberFormatException e) {
-            Toast.makeText(this, R.string.error_steps_invalid, Toast.LENGTH_LONG).show();
-            steps = 4;
-        }
-        showScanArea = mainPrefs.getBoolean("pref_key_show_scanarea", false);
+        loadPrefs();
 
-        Crashlytics.setBool("showGyms", showGyms);
-        Crashlytics.setBool("showPokestops", showPokestops);
-        Crashlytics.setBool("showSpawnpoints", showSpawnpoints);
-        Crashlytics.setBool("showPokemon", showPokemons);
-        Crashlytics.setInt("request_delay", secondsBetweenRequests);
-        Crashlytics.setInt("steps", steps);
-
-        SharedPreferences sharedPref = getSharedPreferences(preferencesKey, Context.MODE_PRIVATE);
-
-        boolean login = sharedPref.getBoolean("login", false);
-
-        if (login) {
-            username = sharedPref.getString("username", null);
-            password = sharedPref.getString("password", null);
-        } else {
-            relog();
-        }
+        mainPrefs.registerOnSharedPreferenceChangeListener(preferencesChangelistener);
         updateMarkers();
     }
 
@@ -631,12 +595,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
             PMarker marker = pokemonMarkers.get(m.getId());
             if (marker == null) continue;
             if (marker.type == PMarker.MarkerType.LUREDPOKESTOP) {
-                PPokestop pmarker = (PPokestop) marker;
-                if (pmarker.getTimestamp() > System.currentTimeMillis()) {
-                    addLuredPokestop(m.getPosition(), pmarker.getTimestamp());
-                } else
-                    addPokestop(m.getPosition());
-                removeMarker(m);
+                updateMarker(m, 50);
             } else if (marker.type == PMarker.MarkerType.POKEMON) {
                 updatePokemon(m);
             }
@@ -645,22 +604,27 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
 
     public void addPokestop(FortDataOuterClass.FortData data) {
         if (fortExists(data.getId())) return;
-        addPokestop(new LatLng(data.getLatitude(), data.getLongitude()));
+        addPokestop(new LatLng(data.getLatitude(), data.getLongitude()), data.getId());
     }
 
-    public void addPokestop(LatLng location) {
-        addMarker(getString(R.string.pokestop), location, new PMarker(PMarker.MarkerType.POKESTOP), BitmapDescriptorFactory.fromResource(R.drawable.pokestop));
+    public void addPokestop(LatLng location, String id) {
+        addMarker(getString(R.string.pokestop), location, new PMarker(PMarker.MarkerType.POKESTOP, id), BitmapDescriptorFactory.fromResource(R.drawable.pokestop));
     }
 
     public void addLuredPokestop(FortDataOuterClass.FortData data) {
         if (fortExists(data.getId())) return;
         LatLng location = new LatLng(data.getLatitude(), data.getLongitude());
-        addLuredPokestop(location, data.getLureInfo().getLureExpiresTimestampMs());
+        PPokemon marker = new PPokemon();
+        marker.setId(location.toString());
+        luredPokemon.put(data.getId(), addPokemon(location, marker, data.getLureInfo().getActivePokemonId()));
+        addLuredPokestop(location, data.getId(), data.getLureInfo().getLureExpiresTimestampMs());
         forts.add(data.getId());
     }
 
-    public void addLuredPokestop(LatLng location, long timestamp) {
-        Marker m = addMarker(getString(R.string.lured_pokestop), location, new PPokestop(timestamp), BitmapDescriptorFactory.fromResource(R.drawable.luredpokestop));
+    public void addLuredPokestop(LatLng location, String id, long timestamp) {
+        PMarker marker = new PPokestop(timestamp);
+        marker.setId(id);
+        Marker m = addMarker(getString(R.string.lured_pokestop), location, marker, BitmapDescriptorFactory.fromResource(R.drawable.luredpokestop));
         updateMarkerAtTime(m, timestamp);
     }
 
@@ -671,15 +635,19 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         forts.add(gym.getId());
     }
 
-    private void addSpawnpoint(SpawnPointOuterClass.SpawnPoint data) {
+    private void addSpawnpoint(Point data) {
         if (spawnpointExists(data)) return;
         LatLng location = new LatLng(data.getLatitude(), data.getLongitude());
-        addMarker(getString(R.string.spawnpoint), location, null, BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+        addMarker(getString(R.string.spawnpoint), location, new PMarker(PMarker.MarkerType.SPAWNPOINT, spawnpointToString(data)), BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
         spawnpoints.add(data.getLatitude() + ":" + data.getLongitude());
     }
 
-    private boolean spawnpointExists(SpawnPointOuterClass.SpawnPoint data) {
-        return spawnpoints.contains(data.getLatitude() + ":" + data.getLongitude());
+    private boolean spawnpointExists(Point data) {
+        return spawnpoints.contains(spawnpointToString(data));
+    }
+
+    private String spawnpointToString(Point data) {
+        return data.getLatitude() + ":" + data.getLongitude();
     }
 
     private boolean fortExists(String id) {
@@ -690,9 +658,17 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         if (pokemon.contains(data.getEncounterId()) || !mainPrefs.getBoolean("pref_key_show_pokemon_" + data.getPokemonId().getNumber(), true))
             return;
         LatLng location = new LatLng(data.getLatitude(), data.getLongitude());
-        Marker m = addMarker(Utils.formatPokemonName(data.getPokemonId().toString()), location, new PPokemon(data), BitmapDescriptorFactory.fromBitmap(Utils.bitmapForPokemon(this, data.getPokemonId().getNumber())));
+        PMarker marker = new PPokemon(data);
+        marker.setId(String.valueOf(data.getEncounterId()));
+        Marker m = addMarker(Utils.formatPokemonName(data.getPokemonId().toString()), location, marker, BitmapDescriptorFactory.fromBitmap(Utils.bitmapForPokemon(this, data.getPokemonId().getNumber())));
         updatePokemon(m);
         pokemon.add(data.getEncounterId());
+    }
+
+    public Marker addPokemon(LatLng location, PPokemon marker, PokemonIdOuterClass.PokemonId id) {
+        if (!mainPrefs.getBoolean("pref_key_show_pokemon_" + id.getNumber(), true))
+            return null;
+        return addMarker(Utils.formatPokemonName(id.toString()), location, marker, BitmapDescriptorFactory.fromBitmap(Utils.bitmapForPokemon(this, id.getNumber())));
     }
 
     public void updatePokemon(Marker m) {
@@ -714,16 +690,9 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
             updateMarker(m, interval - 60 * 1000);
     }
 
-    public void relog() {
-        SharedPreferences.Editor editor = getSharedPreferences(MapsActivity.preferencesKey, Context.MODE_PRIVATE).edit();
-        editor.putBoolean("login", false);
-        editor.apply();
-        Intent i = new Intent(getBaseContext(), LoginActivity.class);
-        startActivity(i);
-    }
-
     public void removeMarker(Marker m) {
         markers.remove(m);
+        pokemonMarkers.remove(m.getId());
         if (updateTasks.containsKey(m.getId()))
             handler.removeCallbacks(updateTasks.get(m.getId()));
         m.remove();
@@ -736,7 +705,70 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         stopTasks();
     }
 
+    public void loadPrefs() {
+        showPokemons = mainPrefs.getBoolean("pref_key_show_pokemon", true);
+        showGyms = mainPrefs.getBoolean("pref_key_show_gyms", true);
+        showPokestops = mainPrefs.getBoolean("pref_key_show_pokestops", true);
+        showSpawnpoints = mainPrefs.getBoolean("pref_key_show_spawnpoints", false);
+        try {
+            steps = Integer.parseInt(mainPrefs.getString("pref_key_steps", "4"));
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, R.string.error_steps_invalid, Toast.LENGTH_LONG).show();
+            steps = 4;
+        }
+        showScanArea = mainPrefs.getBoolean("pref_key_show_scanarea", false);
+
+
+        Crashlytics.setBool("showGyms", showGyms);
+        Crashlytics.setBool("showPokestops", showPokestops);
+        Crashlytics.setBool("showSpawnpoints", showSpawnpoints);
+        Crashlytics.setBool("showPokemon", showPokemons);
+        Crashlytics.setInt("steps", steps);
+    }
+
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+    }
+
+    private class UpdateRunnable implements Runnable {
+        Marker marker;
+
+        public UpdateRunnable(Marker marker) {
+            this.marker = marker;
+        }
+
+        @Override
+        public void run() {
+
+            updateTasks.remove(marker.getId());
+
+            final PMarker pMarker = pokemonMarkers.get(marker.getId());
+            if (pMarker == null) return;
+
+            if (pMarker.type == PMarker.MarkerType.LUREDPOKESTOP) {
+                if (luredPokemon.get(pMarker.getId()) != null) {
+                    removeMarker(luredPokemon.get(pMarker.getId()));
+                    luredPokemon.remove(pMarker.getId());
+                }
+                /*ScanSettings settings = new ScanSettings(username, password, Collections.singletonList(marker.getPosition()));
+                settings.spawnpoints = false;
+                settings.pokemon = false;
+                settings.gyms = false;
+                ScanMap task = new ScanMap(settings, new ScanUpdateCallback() {
+                    @Override
+                    public void scanUpdate(MapWrapper map, int progress, LatLng location) {
+                        for (Pokestop pokestop : map.getPokestops())
+                            if (pokestop.getId().equals(pMarker.getId())){
+
+                                return;
+                            }
+                    }
+                }, new ScanCompleteCallback() {@Override public void scanComplete(Exception result) {}});
+                task.execute();*/
+                removeMarker(marker);
+            } else if (pMarker.type == PMarker.MarkerType.POKEMON) {
+                updatePokemon(marker);
+            }
+        }
     }
 }

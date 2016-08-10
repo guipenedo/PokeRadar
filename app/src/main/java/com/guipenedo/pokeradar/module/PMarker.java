@@ -21,12 +21,16 @@ public class PMarker {
     private String id;
     private double latitude, longitude;
 
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
+    public PMarker(MarkerType type) {
+        this.type = type;
     }
 
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
+    public PMarker(MarkerType type, String id) {
+        this.type = type;
+        this.id = id;
+    }
+
+    public PMarker() {
     }
 
     public double getLatitude() {
@@ -34,8 +38,16 @@ public class PMarker {
         return latitude;
     }
 
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
     public double getLongitude() {
         return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 
     public String getId() {
@@ -46,14 +58,7 @@ public class PMarker {
         this.id = id;
     }
 
-    public PMarker(MarkerType type) {
-        this.type = type;
-    }
-
-    public PMarker() {
-    }
-
     public enum MarkerType {
-        CENTER, POKESTOP, LUREDPOKESTOP, POKEMON, GYM;
+        CENTER, POKESTOP, LUREDPOKESTOP, POKEMON, GYM, SPAWNPOINT
     }
 }

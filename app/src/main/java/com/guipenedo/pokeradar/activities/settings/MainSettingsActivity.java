@@ -21,7 +21,6 @@ import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
@@ -34,6 +33,9 @@ import com.guipenedo.pokeradar.R;
 
 public class MainSettingsActivity extends PreferenceActivity {
 
+
+    private AppCompatDelegate mDelegate;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         getDelegate().installViewFactory();
@@ -42,9 +44,6 @@ public class MainSettingsActivity extends PreferenceActivity {
         //setContentView(R.layout.activity_settings);
         addPreferencesFromResource(R.xml.preferences);
     }
-
-
-    private AppCompatDelegate mDelegate;
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -130,7 +129,7 @@ public class MainSettingsActivity extends PreferenceActivity {
     public boolean onOptionsItemSelected(MenuItem menuItem) {
         switch (menuItem.getItemId()) {
             case android.R.id.home:
-                NavUtils.navigateUpFromSameTask(MainSettingsActivity.this);
+                finish();
         }
         return (super.onOptionsItemSelected(menuItem));
     }

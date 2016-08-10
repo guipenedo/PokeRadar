@@ -21,8 +21,8 @@ import com.pokegoapi.api.map.pokemon.CatchablePokemon;
 public class PPokemon extends PMarker {
     private long timestamp;
 
-    public long getTimestamp() {
-        return timestamp;
+    public PPokemon() {
+
     }
 
     public PPokemon(long timestamp) {
@@ -32,5 +32,9 @@ public class PPokemon extends PMarker {
 
     public PPokemon(CatchablePokemon pokemon) {
         this(pokemon.getExpirationTimestampMs());
+    }
+
+    public long getTimestamp() {
+        return timestamp;
     }
 }

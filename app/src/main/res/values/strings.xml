@@ -39,7 +39,7 @@
     <string name="fetch_data_servers_down">Could not fetch data! Are the servers down?</string>
     <string name="scan_center">Scan center</string>
     <string name="scan_center_infowindow">Scans are centered on this location.\n Long press on the map or drag it to change center.</string>
-    <string name="lured_remaining">%1$s remaining</string>
+    <string name="lured_remaining">%1$s for new pokemon</string>
     <string name="gym_points">Points: %1$d</string>
     <string name="pokemon_despawns_time">Despawns in: %1$s</string>
     <string name="center_marker_title">Center</string>
@@ -58,4 +58,6 @@
     <string name="pokemon">pokemon</string>
     <string name="weak_against">Weak against</string>
     <string name="strong_against">Strong against</string>
+    <string name="gym_details">Click for GYM details and pokemon stats!</string>
+    <string name="logo">logo</string>
 </resources>

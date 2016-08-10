@@ -19,6 +19,8 @@ package com.guipenedo.pokeradar;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -28,6 +30,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.guipenedo.pokeradar.activities.LoginActivity;
+import com.guipenedo.pokeradar.activities.MainActivity;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -67,7 +71,7 @@ public class Utils {
                     112);
         }
         File sdCard = Environment.getExternalStorageDirectory();
-        File dir = new File (sdCard.getAbsolutePath() + "/Android/data/pgoradar");
+        File dir = new File(sdCard.getAbsolutePath() + "/Android/data/pgoradar");
         dir.mkdirs();
         File file = new File(dir, fileName + ".txt");
 
@@ -81,7 +85,7 @@ public class Utils {
     }
 
     public static String loadJSONFromFile(Context context, String filename) {
-        String json = null;
+        String json;
         try {
             InputStream is = context.getAssets().open(filename);
             int size = is.available();
@@ -96,18 +100,27 @@ public class Utils {
         return json;
     }
 
-    public static Bitmap bitmapForPokemon(Context context, int pokemonId){
+    public static Bitmap bitmapForPokemon(Context context, int pokemonId) {
         return BitmapFactory.decodeResource(context.getResources(), resourceIdForPokemon(context, pokemonId));
     }
-    public static int resourceIdForPokemon(Context context, int pokemonId){
+
+    public static int resourceIdForPokemon(Context context, int pokemonId) {
         return context.getResources().getIdentifier("p" + pokemonId, "drawable", context.getPackageName());
     }
 
-    public static String formatPokemonName(String str){
+    public static String formatPokemonName(String str) {
         return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
     }
 
     public static double getIvRatio(int attack, int defense, int stamina) {
         return (attack + defense + stamina) / 45.0;
+    }
+
+    public static void relog(Context context) {
+        SharedPreferences.Editor editor = context.getSharedPreferences(MainActivity.preferencesKey, Context.MODE_PRIVATE).edit();
+        editor.putBoolean("login", false);
+        editor.apply();
+        Intent i = new Intent(context, LoginActivity.class);
+        context.startActivity(i);
     }
 }

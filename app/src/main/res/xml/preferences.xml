@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright 2016 Guilherme Penedo
   ~
   ~    Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,9 +15,7 @@
   -->
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory
-        android:key="pref_key_storage_settings"
-        android:title="Filter items">
+    <PreferenceCategory android:title="Filter items">
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="pref_key_show_pokemon"
@@ -32,6 +29,7 @@
             android:title="Filter pokemons">
             <intent
                 android:action="android.intent.action.VIEW"
+                android:data="pref_key_show_pokemon:setting_filter_pokemon_summary"
                 android:targetClass="com.guipenedo.pokeradar.activities.settings.PokemonFilterSettingsActivity"
                 android:targetPackage="com.guipenedo.pokeradar" />
         </Preference>
@@ -53,15 +51,7 @@
             android:title="Spawnpoints" />
     </PreferenceCategory>
 
-    <PreferenceCategory
-        android:key="pref_key_scan_settings"
-        android:title="Scanning">
-        <EditTextPreference
-            android:defaultValue="2"
-            android:inputType="number"
-            android:key="pref_key_delay"
-            android:summary="Seconds between requests. Small value might get you banned faster/less results."
-            android:title="Delay" />
+    <PreferenceCategory android:title="Scanning">
         <EditTextPreference
             android:defaultValue="4"
             android:inputType="number"
@@ -73,10 +63,15 @@
             android:key="pref_key_show_scanarea"
             android:summary="Display a rectangle on the scan area"
             android:title="Show scan area" />
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="pref_key_show_centers"
-            android:summary="Show scan centers"
-            android:title="Scan centers" />
+        <Preference
+            android:key="pref_clear_map"
+            android:persistent="false"
+            android:summary="Remove pokemon, gyms, pokestops and spawnpoints"
+            android:title="Clear map">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:targetClass="com.guipenedo.pokeradar.activities.MapsActivity"
+                android:targetPackage="com.guipenedo.pokeradar" />
+        </Preference>
     </PreferenceCategory>
 </PreferenceScreen>

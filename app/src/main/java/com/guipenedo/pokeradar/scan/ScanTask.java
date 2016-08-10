@@ -18,29 +18,25 @@ package com.guipenedo.pokeradar.scan;
 
 import android.os.AsyncTask;
 
-import com.guipenedo.pokeradar.activities.MapsActivity;
+import com.guipenedo.pokeradar.activities.MainActivity;
 import com.guipenedo.pokeradar.module.MapWrapper;
 import com.guipenedo.pokeradar.module.PGym;
 import com.pokegoapi.api.PokemonGo;
 import com.pokegoapi.api.gym.Gym;
 import com.pokegoapi.api.map.Map;
 import com.pokegoapi.api.map.MapObjects;
-import com.pokegoapi.api.map.pokemon.CatchablePokemon;
-import com.pokegoapi.auth.PtcCredentialProvider;
 
 import java.util.HashSet;
-import java.util.Iterator;
 
 import POGOProtos.Map.Fort.FortDataOuterClass;
-import POGOProtos.Map.Pokemon.MapPokemonOuterClass;
-import POGOProtos.Map.Pokemon.WildPokemonOuterClass;
-import okhttp3.OkHttpClient;
 
-public class ScanTask extends AsyncTask<Void, MapWrapper, Exception> {
+public class ScanTask extends AsyncTask<Void, MapWrapper, Void> {
 
     ScanUpdateCallback updateCallback;
     ScanSettings settings;
     ScanCompleteCallback completeCallback;
+    HashSet<String> ids = new HashSet<>();
+    int pos = 0;
 
     public ScanTask(ScanSettings settings, ScanUpdateCallback updateCallback, ScanCompleteCallback completeCallback) {
         this.settings = settings;
@@ -48,18 +44,12 @@ public class ScanTask extends AsyncTask<Void, MapWrapper, Exception> {
         this.completeCallback = completeCallback;
     }
 
-    int pos = 0;
-
     @Override
-    protected Exception doInBackground(Void... voids) {
-        OkHttpClient httpClient = MapsActivity.getHttp();
-        PokemonGo go;
-        try {
-            go = new PokemonGo(new PtcCredentialProvider(httpClient, settings.username,
-                    settings.password), httpClient);
-        } catch (Exception e) {
-            return e;
-        }
+    protected Void doInBackground(Void... voids) {
+        PokemonGo go = MainActivity.go;
+        if (go == null)
+            return null;
+        long time = System.currentTimeMillis();
 
         while (pos < settings.locations.size()) {
             if (isCancelled()) return null;
@@ -67,41 +57,36 @@ public class ScanTask extends AsyncTask<Void, MapWrapper, Exception> {
             go.setLongitude(settings.locations.get(pos).longitude);
             pos++;
             try {
-                Map map = go.getMap();
-                MapObjects objects = map.getMapObjects();
+                Map map = new Map(go);
+                MapObjects objects = map.getMapObjects(9);
                 MapWrapper mapWrapper = new MapWrapper();
-                if (settings.pokemon) {
-                    HashSet<CatchablePokemon> catchablePokemons = new HashSet<>();
-                    Iterator var3 = objects.getCatchablePokemons().iterator();
-
-                    while(var3.hasNext()) {
-                        MapPokemonOuterClass.MapPokemon wildPokemon = (MapPokemonOuterClass.MapPokemon)var3.next();
-                        catchablePokemons.add(new CatchablePokemon(go, wildPokemon));
-                    }
-
-                    var3 = objects.getWildPokemons().iterator();
-
-                    while(var3.hasNext()) {
-                        WildPokemonOuterClass.WildPokemon wildPokemon1 = (WildPokemonOuterClass.WildPokemon)var3.next();
-                        catchablePokemons.add(new CatchablePokemon(go, wildPokemon1));
-                    }
-
-                    mapWrapper.getPokemon().addAll(catchablePokemons);
-                }
+                if (settings.pokemon)
+                    mapWrapper.getPokemon().addAll(map.getCatchablePokemon());
                 if (settings.pokestops)
                     mapWrapper.getPokestops().addAll(objects.getPokestops());
                 if (settings.spawnpoints) {
-                    mapWrapper.getSpawnpoints().addAll(objects.getDecimatedSpawnPoints());
-                    mapWrapper.getSpawnpoints().addAll(objects.getSpawnPoints());
+                    mapWrapper.getSpawnpoints().addAll(map.getDecimatedSpawnPoints());
+                    mapWrapper.getSpawnpoints().addAll(map.getSpawnPoints());
                 }
                 if (settings.gyms)
                     for (FortDataOuterClass.FortData fortdata : objects.getGyms()) {
-                        Thread.sleep(300);
-                        mapWrapper.getGyms().add(new PGym(new Gym(go, fortdata)));
+                        if (!ids.contains(fortdata.getId())) {
+                            Thread.sleep(350);
+                            mapWrapper.getGyms().add(new PGym(new Gym(go, fortdata)));
+                            ids.add(fortdata.getId());
+                        }
                     }
                 publishProgress(mapWrapper);
 
-                Thread.sleep(settings.delay);
+                if (objects.getPokestops().size() > 0) {
+                    System.out.println("SUCCESSFUL REQUEST! TIME: " + (System.currentTimeMillis() - time) / 1000);
+                    time = System.currentTimeMillis();
+                }
+                System.out.println("POKESTOP COUNT: " + objects.getPokestops().size());
+                System.out.println("SLEEPING " + ((long) go.getSettings().getMapSettings().getMinRefresh()));
+                //Thread.sleep((long) go.getSettings().getMapSettings().getMinRefresh());
+                Thread.sleep(6200);
+                //Thread.sleep(10000);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -118,7 +103,7 @@ public class ScanTask extends AsyncTask<Void, MapWrapper, Exception> {
     }
 
     @Override
-    protected void onPostExecute(Exception result) {
-        completeCallback.scanComplete(result);
+    protected void onPostExecute(Void ee) {
+        completeCallback.scanComplete();
     }
 }

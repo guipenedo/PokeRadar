@@ -21,10 +21,10 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Context;
+import android.content.Intent;
 import android.content.Loader;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -39,23 +39,24 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.guipenedo.pokeradar.R;
+import com.guipenedo.pokeradar.login.LoginCompleteCallback;
+import com.guipenedo.pokeradar.login.LoginTask;
 import com.pokegoapi.api.PokemonGo;
-import com.pokegoapi.auth.PtcCredentialProvider;
 import com.pokegoapi.exceptions.LoginFailedException;
 import com.pokegoapi.exceptions.RemoteServerException;
-
-import okhttp3.OkHttpClient;
 
 
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor>, LoginCompleteCallback {
+
+    String username, password;
 
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    private UserLoginTask mAuthTask = null;
+    private LoginTask mAuthTask = null;
 
     // UI references.
     private AutoCompleteTextView mUsernameView;
@@ -115,8 +116,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mPasswordView.setError(null);
 
         // Store values at the time of the login attempt.
-        String username = mUsernameView.getText().toString();
-        String password = mPasswordView.getText().toString();
+        username = mUsernameView.getText().toString();
+        password = mPasswordView.getText().toString();
         if (password.length() > 15)
             password = password.substring(0, 15);
 
@@ -143,7 +144,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(username, password);
+            mAuthTask = new LoginTask(username, password, this);
             mAuthTask.execute((Void) null);
         }
     }
@@ -199,59 +200,29 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     }
 
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-     */
-    public class UserLoginTask extends AsyncTask<Void, Void, Exception> {
+    @Override
+    public void loginComplete(PokemonGo go, Exception result) {
 
-        private final String mUsername;
-        private final String mPassword;
+        mAuthTask = null;
+        showProgress(false);
 
-        UserLoginTask(String username, String password) {
-            mUsername = username;
-            mPassword = password;
-        }
-
-        @Override
-        protected Exception doInBackground(Void... params) {
-
-            OkHttpClient httpClient = MapsActivity.getHttp();
-            try {
-                new PokemonGo(new PtcCredentialProvider(httpClient, mUsername,
-                    mPassword), httpClient);
-            } catch (Exception e) {
-                return e;
-            }
-
-            SharedPreferences.Editor editor = getSharedPreferences(MapsActivity.preferencesKey, Context.MODE_PRIVATE).edit();
+        if (result == null) {
+            SharedPreferences.Editor editor = getSharedPreferences(MainActivity.preferencesKey, Context.MODE_PRIVATE).edit();
             editor.putBoolean("login", true);
-            editor.putString("username", mUsername);
-            editor.putString("password", mPassword);
+            editor.putString("username", username);
+            editor.putString("password", password);
+            MainActivity.username = username;
+            MainActivity.password = password;
             editor.apply();
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(final Exception e) {
-            mAuthTask = null;
-            showProgress(false);
-
-            if (e == null) {
-                finish();
-            } else if (e instanceof LoginFailedException){
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
-            }else if (e instanceof RemoteServerException){
-                mPasswordView.setError(getString(R.string.login_server_exception));
-                mPasswordView.requestFocus();
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-            showProgress(false);
+            MainActivity.go = go;
+            Intent i = new Intent(this, MapsActivity.class);
+            startActivity(i);
+        } else if (result instanceof LoginFailedException) {
+            mPasswordView.setError(getString(R.string.error_incorrect_password));
+            mPasswordView.requestFocus();
+        } else if (result instanceof RemoteServerException) {
+            mPasswordView.setError(getString(R.string.login_server_exception));
+            mPasswordView.requestFocus();
         }
     }
 }

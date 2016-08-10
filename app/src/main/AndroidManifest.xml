@@ -29,13 +29,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".activities.MapsActivity"
-            android:label="@string/title_activity_maps">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:label="@string/title_activity_maps" />
         <!--
  ATTENTION: This was auto-generated to add Google Play services to your project for
      App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -50,7 +44,7 @@
         <activity
             android:name=".activities.settings.MainSettingsActivity"
             android:label="Settings"
-            android:parentActivityName=".activities.MapsActivity">
+            android:parentActivityName=".activities.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.MapsActivity" />
@@ -94,7 +88,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.MapsActivity" />
         </activity>
-        <activity android:name=".activities.PokemonDetailsActivity"></activity>
+        <activity android:name=".activities.PokemonDetailsActivity" />
+        <activity android:name=".activities.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

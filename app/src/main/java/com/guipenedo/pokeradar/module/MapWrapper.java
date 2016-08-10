@@ -16,6 +16,7 @@
 
 package com.guipenedo.pokeradar.module;
 
+import com.pokegoapi.api.map.Point;
 import com.pokegoapi.api.map.fort.Pokestop;
 import com.pokegoapi.api.map.pokemon.CatchablePokemon;
 
@@ -23,14 +24,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import POGOProtos.Map.SpawnPointOuterClass;
-
 public class MapWrapper {
 
     private Collection<Pokestop> pokestops = new ArrayList<>();
     private List<PGym> gyms = new ArrayList<>();
     private List<CatchablePokemon> pokemon = new ArrayList<>();
-    private List<SpawnPointOuterClass.SpawnPoint> spawnpoints = new ArrayList<>();
+    private List<Point> spawnpoints = new ArrayList<>();
 
     public Collection<Pokestop> getPokestops() {
         return pokestops;
@@ -44,7 +43,7 @@ public class MapWrapper {
         return pokemon;
     }
 
-    public List<SpawnPointOuterClass.SpawnPoint> getSpawnpoints() {
+    public List<Point> getSpawnpoints() {
         return spawnpoints;
     }
 }

@@ -17,5 +17,5 @@
 package com.guipenedo.pokeradar.scan;
 
 public interface ScanCompleteCallback {
-    void scanComplete(Exception result);
+    void scanComplete();
 }

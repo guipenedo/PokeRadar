@@ -24,12 +24,10 @@ public class ScanSettings {
     public final String username, password;
     public List<LatLng> locations;
     public boolean gyms = true, pokemon = true, pokestops = true, spawnpoints = true;
-    public int delay;
 
-    public ScanSettings(String username, String password, List<LatLng> locations, int delay) {
+    public ScanSettings(String username, String password, List<LatLng> locations) {
         this.username = username;
         this.password = password;
         this.locations = locations;
-        this.delay = delay;
     }
 }
